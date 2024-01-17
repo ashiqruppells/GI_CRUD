@@ -2,10 +2,9 @@ import { React, useState, useEffect } from "react";
 import { styled } from "styled-components";
 import axios from "axios";
 
-function CreateNote({
+function ViewNote({
   isOpen,
   onClose,
-  isEdit=false,
   defaultValues = {
     title: "",
     body: "",
@@ -15,41 +14,17 @@ function CreateNote({
 
   if (!isOpen) return null;
 
-  const [inputs, setInputs] = useState(defaultValues);
+  const [items, setItems] = useState(defaultValues);
   const onChange = (e) => {
     setInputs({
-      ...inputs,
+      ...items,
       [e.target.name]: e.target.value,
     });
   };
 
-  const createNoteHandler = () => {
-
-    axios
-      .post("http://127.0.0.1:8000/api/v1/notes/create-note/", inputs)
-      .then((res) => {
-        const { StatusCode, data } = res.data;
-        if (StatusCode === 6000) {
-          window.location.reload();
-          uploadCallback();
-        } else {
-          console.log(data);
-        }
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
-      })
-      .catch((err) => {
-        console.log(err);
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
-      });
-  };
-
-  const editHandler = ()=>{
+  const viewHandler = ()=>{
 	axios
-      .put(`http://127.0.0.1:8000/api/v1/notes/edit/${defaultValues.id}/`, inputs)
+      .get(`http://127.0.0.1:8000/api/v1/notes/${defaultValues.id}/`, items)
       .then((res) => {
         const { StatusCode, data } = res.data;
         if (StatusCode === 6000) {
@@ -74,50 +49,29 @@ function CreateNote({
 
   return (
     <Container>
-      <div className="modal-overlay">
-        <div className="modal">
-          <div className="modal-content">
-            <ModalHeading>{isEdit? "Edit Note" :  "Create Note"}</ModalHeading>
-            <FormContainer>
-              <form method="POST">
-                <div className="form-group">
-                  <label htmlFor="name">Title:</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={inputs.title}
-                    placeholder="Enter Title"
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                  />
+        <div className="modal-overlay">
+            <div className="modal">
+                <div className="modal-content">
+                    <ModalHeading>View note</ModalHeading>
+                    <div>
+                        <p><strong>Title:</strong> {items.title}</p>
+                    </div>
+                    <div>
+                        <p><strong>Body:</strong> {items.body}</p>
+                    </div>
+                    <ButtonContainer>
+                        <Button onClick={onClose}>
+                            Close
+                        </Button>
+                    </ButtonContainer>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="phone">Note</label>
-                  <input
-                    type="text"
-                    name="body"
-                    value={inputs.body}
-                    placeholder="Enter Note"
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                  />
-                </div>
-              </form>
-            </FormContainer>
-            <ButtonContainer>
-              <Button onClick={isEdit? editHandler :  createNoteHandler}>Submit</Button>
-              <Button onClick={onClose}>Close</Button>
-            </ButtonContainer>
-          </div>
+            </div>
         </div>
-      </div>
     </Container>
   );
 }
 
-export default CreateNote;
+export default ViewNote;
 
 const ModalHeading = styled.h2`
   font-size: 24px;
@@ -143,9 +97,7 @@ const Container = styled.div`
     background-color: #fff; /* Background color of the modal */
     padding: 20px;
     border-radius: 4px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); /* Add a shadow for depth */
-    /* width: 630px; */
-    /* height: 700px; */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   }
 
   /* Styling for modal content (you can customize this) */
